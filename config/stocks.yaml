@@ -1,0 +1,180 @@
+"""
+选股与策略配置 - YAML格式，每只股票可配置独立策略
+格式说明：
+  ticker: 股票代码
+  exchange: 交易所（Trading212格式）
+  strategy: 使用的策略名
+  params: 策略参数覆盖
+  weight: 仓位权重
+"""
+
+watchlist:
+  # === 科技股 ===
+  - ticker: AAPL_US_EQ
+    symbol: AAPL
+    sector: tech
+    strategy: momentum_trend
+    params:
+      fast_ma: 10
+      slow_ma: 30
+      rsi_period: 14
+      rsi_overbought: 75
+      rsi_oversold: 25
+    weight: 0.12
+
+  - ticker: MSFT_US_EQ
+    symbol: MSFT
+    sector: tech
+    strategy: momentum_trend
+    params:
+      fast_ma: 12
+      slow_ma: 26
+      rsi_period: 14
+      rsi_overbought: 70
+      rsi_oversold: 30
+    weight: 0.12
+
+  - ticker: NVDA_US_EQ
+    symbol: NVDA
+    sector: tech
+    strategy: momentum_trend
+    params:
+      fast_ma: 8
+      slow_ma: 21
+      rsi_period: 10
+      adx_threshold: 25
+    weight: 0.10
+
+  - ticker: GOOGL_US_EQ
+    symbol: GOOGL
+    sector: tech
+    strategy: mean_reversion
+    params:
+      bb_period: 20
+      bb_std: 2.0
+      rsi_period: 14
+      z_score_threshold: 2.0
+    weight: 0.08
+
+  - ticker: AMZN_US_EQ
+    symbol: AMZN
+    sector: tech
+    strategy: event_driven
+    params:
+      sentiment_threshold: 0.3
+      volume_surge_pct: 1.5
+      news_weight: 0.4
+    weight: 0.08
+
+  # === 医疗股 ===
+  - ticker: LLY_US_EQ
+    symbol: LLY
+    sector: healthcare
+    strategy: momentum_trend
+    params:
+      fast_ma: 15
+      slow_ma: 40
+    weight: 0.06
+
+  - ticker: UNH_US_EQ
+    symbol: UNH
+    sector: healthcare
+    strategy: mean_reversion
+    params:
+      bb_period: 20
+      bb_std: 1.8
+    weight: 0.06
+
+  # === 金融股 ===
+  - ticker: JPM_US_EQ
+    symbol: JPM
+    sector: finance
+    strategy: momentum_trend
+    params:
+      fast_ma: 10
+      slow_ma: 30
+    weight: 0.06
+
+  - ticker: V_US_EQ
+    symbol: V
+    sector: finance
+    strategy: mean_reversion
+    params:
+      lookback: 30
+      z_score_threshold: 2.0
+    weight: 0.06
+
+  # === 能源股 ===
+  - ticker: XOM_US_EQ
+    symbol: XOM
+    sector: energy
+    strategy: momentum_trend
+    params:
+      fast_ma: 10
+      slow_ma: 30
+      adx_threshold: 20
+    weight: 0.05
+
+  # === 消费股 ===
+  - ticker: WMT_US_EQ
+    symbol: WMT
+    sector: consumer
+    strategy: mean_reversion
+    params:
+      bb_period: 20
+      bb_std: 2.0
+    weight: 0.05
+
+  # === ETF ===
+  - ticker: SPY_US_ETF
+    symbol: SPY
+    sector: etf_index
+    strategy: momentum_trend
+    params:
+      fast_ma: 12
+      slow_ma: 26
+    weight: 0.10
+
+  - ticker: QQQ_US_ETF
+    symbol: QQQ
+    sector: etf_index
+    strategy: momentum_trend
+    params:
+      fast_ma: 10
+      slow_ma: 30
+    weight: 0.06
+
+# 策略默认参数
+strategy_defaults:
+  momentum_trend:
+    fast_ma: 10
+    slow_ma: 30
+    rsi_period: 14
+    rsi_overbought: 70
+    rsi_oversold: 30
+    adx_threshold: 25
+    volume_ma_period: 20
+
+  mean_reversion:
+    bb_period: 20
+    bb_std: 2.0
+    rsi_period: 14
+    z_score_threshold: 2.0
+    lookback: 30
+    holding_period_max: 10
+
+  event_driven:
+    sentiment_threshold: 0.3
+    volume_surge_pct: 1.5
+    news_weight: 0.4
+    earnings_weight: 0.3
+    macro_weight: 0.3
+
+# 复盘配置
+reflection:
+  daily_report_hour: 22  # UTC
+  weekly_review_day: "Sunday"
+  strategy_performance_window: 30  # 30天滚动窗口
+  min_trades_for_evaluation: 10
+  auto_disable_underperform: true
+  underperform_threshold: -0.05  # 5%亏损自动禁用策略

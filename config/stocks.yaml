@@ -1,12 +1,10 @@
-"""
-选股与策略配置 - YAML格式，每只股票可配置独立策略
-格式说明：
-  ticker: 股票代码
-  exchange: 交易所（Trading212格式）
-  strategy: 使用的策略名
-  params: 策略参数覆盖
-  weight: 仓位权重
-"""
+# 选股与策略配置 - YAML格式，每只股票可配置独立策略
+# 格式说明：
+#   ticker: 股票代码
+#   exchange: 交易所（Trading212格式）
+#   strategy: 使用的策略名
+#   params: 策略参数覆盖
+#   weight: 仓位权重
 
 watchlist:
   # === 科技股 ===

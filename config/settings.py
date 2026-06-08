@@ -42,8 +42,10 @@ class DataConfig:
     DB_PATH = os.getenv("DB_PATH", str(BASE_DIR / "data" / "quant_system.db"))
     NEWS_API_KEY = os.getenv("NEWS_API_KEY", "")
     ALPHA_VANTAGE_KEY = os.getenv("ALPHA_VANTAGE_KEY", "")
+    TWELVE_DATA_KEY = os.getenv("TWELVE_DATA_KEY", "")
     MARKET_DATA_INTERVAL = "5m"    # 盘中数据频率
     HISTORICAL_PERIOD = "1y"       # 历史数据长度
+    PRIMARY_DATA_SOURCE = os.getenv("PRIMARY_DATA_SOURCE", "yfinance")  # yfinance | twelvedata
 
 
 class SystemConfig:
@@ -53,6 +55,17 @@ class SystemConfig:
     SCHEDULER_INTERVAL_MINUTES = 5  # 调度器间隔
     REFLECTION_HOUR = 22            # 每日复盘时间(UTC)
     BACKTEST_INITIAL_CASH = 100000  # 回测初始资金
+
+
+class NotificationConfig:
+    """通知配置"""
+    WEBHOOK_URL = os.getenv("NOTIFY_WEBHOOK_URL", "")
+    WEBHOOK_TYPE = os.getenv("NOTIFY_WEBHOOK_TYPE", "generic")  # wechat|dingtalk|slack|discord|telegram|generic
+    EMAIL_SMTP_HOST = os.getenv("NOTIFY_SMTP_HOST", "smtp.gmail.com")
+    EMAIL_SMTP_PORT = int(os.getenv("NOTIFY_SMTP_PORT", "587"))
+    EMAIL_SENDER = os.getenv("NOTIFY_EMAIL_SENDER", "")
+    EMAIL_PASSWORD = os.getenv("NOTIFY_EMAIL_PASSWORD", "")
+    EMAIL_RECIPIENTS = [e for e in os.getenv("NOTIFY_EMAIL_RECIPIENTS", "").split(",") if e]
 
 
 # 选股池配置 - 可通过 stocks.yaml 自定义

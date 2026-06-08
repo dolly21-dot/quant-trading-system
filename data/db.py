@@ -8,7 +8,7 @@ from pathlib import Path
 
 from sqlalchemy import (
     create_engine, Column, String, Float, Integer, DateTime, Text, Boolean,
-    Index, JSON, UniqueConstraint
+    Index, JSON, UniqueConstraint, text as sqlalchemy_text
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from loguru import logger
@@ -245,8 +245,13 @@ class DatabaseManager:
         self.engine = create_engine(
             f"sqlite:///{self.db_path}",
             echo=False,
-            connect_args={"check_same_thread": False}
+            connect_args={"check_same_thread": False},
+            pool_pre_ping=True,
         )
+        # 启用WAL模式，避免并发写入冲突
+        with self.engine.connect() as conn:
+            conn.execute(sqlalchemy_text("PRAGMA journal_mode=WAL"))
+            conn.execute(sqlalchemy_text("PRAGMA busy_timeout=5000"))
         self.SessionLocal = sessionmaker(bind=self.engine, expire_on_commit=False)
         self._create_tables()
         logger.info(f"数据库初始化完成: {self.db_path}")
@@ -260,30 +265,36 @@ class DatabaseManager:
         return self.SessionLocal()
 
     def bulk_insert_ohlcv(self, records: list[dict]):
-        """批量插入K线数据"""
-        session = self.get_session()
-        try:
-            for r in records:
-                existing = session.query(OHLCV).filter_by(
-                    symbol=r["symbol"],
-                    timestamp=r["timestamp"],
-                    interval=r["interval"]
-                ).first()
-                if existing:
-                    # 更新已有数据
-                    for key, val in r.items():
-                        if key not in ("id",):
-                            setattr(existing, key, val)
+        """批量插入K线数据（含重试）"""
+        import time
+        for attempt in range(3):
+            session = self.get_session()
+            try:
+                for r in records:
+                    existing = session.query(OHLCV).filter_by(
+                        symbol=r["symbol"],
+                        timestamp=r["timestamp"],
+                        interval=r["interval"]
+                    ).first()
+                    if existing:
+                        for key, val in r.items():
+                            if key not in ("id",):
+                                setattr(existing, key, val)
+                    else:
+                        session.add(OHLCV(**r))
+                session.commit()
+                logger.debug(f"批量写入K线数据: {len(records)} 条")
+                return
+            except Exception as e:
+                session.rollback()
+                if attempt < 2:
+                    logger.warning(f"K线写入重试({attempt+1}/3): {e}")
+                    time.sleep(0.5 * (attempt + 1))
                 else:
-                    session.add(OHLCV(**r))
-            session.commit()
-            logger.debug(f"批量写入K线数据: {len(records)} 条")
-        except Exception as e:
-            session.rollback()
-            logger.error(f"批量写入K线失败: {e}")
-            raise
-        finally:
-            session.close()
+                    logger.error(f"批量写入K线失败(3次重试后): {e}")
+                    raise
+            finally:
+                session.close()
 
     def insert_trade(self, trade_data: dict) -> int:
         """插入交易记录"""

@@ -1,0 +1,45 @@
+# Environment & Secrets
+.env
+.env.local
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+*.sqlite3
+data/*.db
+
+# Logs
+logs/
+*.log
+
+# Backtest results (large files)
+backtest_results/*.csv
+backtest_results/*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
